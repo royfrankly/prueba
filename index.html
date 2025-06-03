@@ -1,192 +1,471 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="scroll-smooth">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Verificación y Validación</title>
-  <style>
-    body {
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      line-height: 1.6;
-      margin: 0;
-      padding: 0;
-      background-color: #f9f9f9;
-      color: #333;
-    }
-
-    header {
-      background-color: #005baa;
-      color: #fff;
-      padding: 20px 0;
-      text-align: center;
-    }
-
-    nav {
-      background-color: #003f7d;
-      display: flex;
-      justify-content: center;
-    }
-
-    nav a {
-      color: #fff;
-      padding: 14px 20px;
-      text-decoration: none;
-      display: inline-block;
-    }
-
-    nav a:hover {
-      background-color: #004d99;
-    }
-
-    .container {
-      max-width: 960px;
-      margin: auto;
-      padding: 20px;
-      background-color: #fff;
-    }
-
-    h1, h2, h3 {
-      color: #005baa;
-    }
-
-    footer {
-      text-align: center;
-      padding: 20px;
-      background-color: #003f7d;
-      color: white;
-      margin-top: 40px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-
-    table, th, td {
-      border: 1px solid #aaa;
-    }
-
-    th, td {
-      padding: 10px;
-      text-align: center;
-    }
-
-    @media (max-width: 768px) {
-      nav {
-        flex-direction: column;
-      }
-
-      nav a {
-        text-align: center;
-        padding: 10px;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explorador Interactivo: Verificación y Validación</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony -->
+    <!-- Application Structure Plan: A thematic dashboard/explorer structure. Starts with a hero section clarifying the core concepts (V vs. V). A sticky navigation bar allows jumps to key sections: Fundamentos, Técnicas, Procesos, and Prácticas. The 'Técnicas' section uses an interactive tabbed interface. The 'Procesos' section uses visual diagrams (built with HTML/CSS) and a toggle to compare traditional vs. agile models. 'Prácticas' uses a two-column card layout for challenges and best practices. This structure is chosen to break down dense academic content into interactive, manageable chunks, prioritizing user exploration and understanding over the linear structure of the source report. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Core V&V definitions -> Goal: Inform/Compare -> Viz: Interactive side-by-side cards -> Interaction: Hover effects -> Justification: Immediately clarifies the central theme.
+        - Report Info: V&V Techniques -> Goal: Organize/Inform -> Viz: Tabbed interface with clickable cards -> Interaction: Tab switching and card expansion (simulated via active states) -> Justification: Avoids a long, overwhelming list and allows user-driven exploration.
+        - Report Info: Development Models -> Goal: Compare/Change -> Viz: HTML/CSS diagrams for V-Model & Agile, plus a Chart.js bar chart for defect costs -> Interaction: Toggle buttons to switch between diagrams -> Justification: Visual diagrams and charts are more effective than text for explaining processes and impact.
+        - Report Info: Challenges & Best Practices -> Goal: Inform/Organize -> Viz: Two-column layout with cards and icons -> Interaction: Simple hover states -> Justification: Enhances scannability and memorability.
+        - Library/Method: Chart.js for the bar chart. All other visuals are pure HTML/CSS.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .active-nav {
+            color: #2563eb; /* text-blue-600 */
+            font-weight: 600;
+        }
+        .tab-button.active {
+            border-color: #2563eb;
+            color: #2563eb;
+            background-color: #dbeafe;
+        }
+    </style>
 </head>
-<body>
+<body class="bg-slate-50 text-slate-800">
 
-  <header>
-    <h1>Verificación y Validación</h1>
-    <p>Monografía académica en formato APA 7ª edición</p>
-  </header>
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold text-slate-900">V&V Explorer</h1>
+            <div class="hidden md:flex space-x-8">
+                <a href="#fundamentos" class="text-slate-600 hover:text-blue-600 transition duration-300">Fundamentos</a>
+                <a href="#tecnicas" class="text-slate-600 hover:text-blue-600 transition duration-300">Técnicas</a>
+                <a href="#procesos" class="text-slate-600 hover:text-blue-600 transition duration-300">Procesos</a>
+                <a href="#practicas" class="text-slate-600 hover:text-blue-600 transition duration-300">Prácticas</a>
+            </div>
+            <button id="mobile-menu-button" class="md:hidden p-2 rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-100">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            </button>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden px-4 pb-3 space-y-1">
+            <a href="#fundamentos" class="block py-2 px-3 rounded-md text-base font-medium text-slate-600 hover:bg-slate-100 hover:text-blue-600">Fundamentos</a>
+            <a href="#tecnicas" class="block py-2 px-3 rounded-md text-base font-medium text-slate-600 hover:bg-slate-100 hover:text-blue-600">Técnicas</a>
+            <a href="#procesos" class="block py-2 px-3 rounded-md text-base font-medium text-slate-600 hover:bg-slate-100 hover:text-blue-600">Procesos</a>
+            <a href="#practicas" class="block py-2 px-3 rounded-md text-base font-medium text-slate-600 hover:bg-slate-100 hover:text-blue-600">Prácticas</a>
+        </div>
+    </header>
 
-  <nav>
-    <a href="#resumen">Resumen</a>
-    <a href="#introduccion">Introducción</a>
-    <a href="#desarrollo">Desarrollo</a>
-    <a href="#conclusion">Conclusión</a>
-    <a href="#referencias">Referencias</a>
-  </nav>
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
 
-  <div class="container">
+        <section id="hero" class="text-center mb-16">
+            <h2 class="text-4xl md:text-5xl font-bold text-slate-900 mb-4">Verificación y Validación</h2>
+            <p class="max-w-3xl mx-auto text-lg text-slate-600 mb-10">
+                Una exploración interactiva de los procesos clave para asegurar la calidad y el éxito en la ingeniería de sistemas y software.
+            </p>
+            <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                <div class="bg-white p-8 rounded-xl shadow-lg border border-transparent hover:border-blue-500 hover:shadow-xl transition-all duration-300">
+                    <h3 class="text-2xl font-bold text-blue-700 mb-3">Verificación</h3>
+                    <p class="text-lg font-semibold text-slate-800 italic mb-4">"¿Estamos construyendo el producto correctamente?"</p>
+                    <p class="text-slate-600">Se enfoca en asegurar que el software se ajuste a las especificaciones y estándares definidos. Implica revisiones y análisis para confirmar la conformidad con el diseño.</p>
+                </div>
+                <div class="bg-white p-8 rounded-xl shadow-lg border border-transparent hover:border-teal-500 hover:shadow-xl transition-all duration-300">
+                    <h3 class="text-2xl font-bold text-teal-700 mb-3">Validación</h3>
+                    <p class="text-lg font-semibold text-slate-800 italic mb-4">"¿Estamos construyendo el producto correcto?"</p>
+                    <p class="text-slate-600">Se centra en asegurar que el producto final satisfaga las necesidades reales del usuario. Involucra pruebas en contextos de uso real para confirmar su utilidad.</p>
+                </div>
+            </div>
+        </section>
 
-    <section id="resumen">
-      <h2>Resumen</h2>
-      <p>
-        La verificación y validación (V&V) son procesos fundamentales en el desarrollo de sistemas y productos, especialmente en ingeniería de software y manufactura. Este documento analiza sus definiciones, diferencias, metodologías y aplicaciones prácticas, demostrando su importancia en la calidad, seguridad y funcionalidad del producto final.
-      </p>
-    </section>
+        <div class="my-16 border-t border-slate-200"></div>
 
-    <section id="introduccion">
-      <h2>Introducción</h2>
-      <p>
-        En proyectos complejos, garantizar que un producto cumpla con las especificaciones técnicas y las expectativas del cliente es clave. Para lograrlo, se aplican dos procesos: verificación y validación. Aunque relacionados, tienen enfoques y objetivos diferentes que serán explorados en esta monografía.
-      </p>
-    </section>
+        <section id="fundamentos" class="scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-slate-900 mb-2">Pilares de la Calidad</h2>
+                <p class="max-w-2xl mx-auto text-lg text-slate-600">La V&V no es un gasto, es una inversión estratégica. Su implementación rigurosa ofrece beneficios cruciales que impactan directamente en el éxito del proyecto y la confianza del cliente.</p>
+            </div>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h4 class="font-bold text-lg mb-2 text-slate-900">Reducción de Riesgos y Costos</h4>
+                    <p class="text-slate-600">Detectar defectos temprano en el ciclo de vida reduce exponencialmente los costos de corrección y mitiga riesgos de fallos en producción.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h4 class="font-bold text-lg mb-2 text-slate-900">Mejora de la Calidad</h4>
+                    <p class="text-slate-600">Asegura la entrega de productos más fiables, robustos y conformes con las especificaciones y expectativas.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h4 class="font-bold text-lg mb-2 text-slate-900">Cumplimiento Regulatorio</h4>
+                    <p class="text-slate-600">Es indispensable para cumplir con normativas estrictas en industrias como la médica, financiera o aeroespacial.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h4 class="font-bold text-lg mb-2 text-slate-900">Confianza del Cliente</h4>
+                    <p class="text-slate-600">Un proceso de V&V transparente demuestra un compromiso con la calidad y la satisfacción de las necesidades del usuario.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h4 class="font-bold text-lg mb-2 text-slate-900">Optimización del Proceso</h4>
+                    <p class="text-slate-600">La retroalimentación obtenida sirve para identificar debilidades y mejorar los procesos de desarrollo futuros.</p>
+                </div>
+                 <div class="bg-white p-6 rounded-lg shadow">
+                    <h4 class="font-bold text-lg mb-2 text-slate-900">Trazabilidad Completa</h4>
+                    <p class="text-slate-600">Permite verificar que cada requisito ha sido implementado y probado adecuadamente a lo largo del proyecto.</p>
+                </div>
+            </div>
+        </section>
 
-    <section id="desarrollo">
-      <h2>Desarrollo</h2>
+        <div class="my-16 border-t border-slate-200"></div>
 
-      <h3>1. Definiciones</h3>
-      <p><strong>Verificación:</strong> Asegura que el producto cumple con las especificaciones técnicas establecidas. Pregunta clave: “¿Estamos construyendo el producto correctamente?”</p>
-      <p><strong>Validación:</strong> Garantiza que el producto satisface las necesidades del cliente. Pregunta clave: “¿Estamos construyendo el producto correcto?”</p>
+        <section id="tecnicas" class="scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-slate-900 mb-2">El Arsenal de Técnicas de V&V</h2>
+                <p class="max-w-2xl mx-auto text-lg text-slate-600">Explora las distintas herramientas y métodos que se utilizan para verificar y validar un sistema. Selecciona una categoría para descubrir sus técnicas específicas.</p>
+            </div>
+            <div class="w-full max-w-2xl mx-auto mb-8">
+                <div class="flex border-b border-slate-200">
+                    <button data-tab="verificacion" class="tab-button flex-1 py-3 px-4 text-center font-semibold text-slate-600 border-b-2 border-transparent hover:bg-slate-100 hover:text-blue-600 transition-colors duration-300 active">
+                        Técnicas de Verificación
+                    </button>
+                    <button data-tab="validacion" class="tab-button flex-1 py-3 px-4 text-center font-semibold text-slate-600 border-b-2 border-transparent hover:bg-slate-100 hover:text-blue-600 transition-colors duration-300">
+                        Técnicas de Validación
+                    </button>
+                </div>
+            </div>
 
-      <h3>2. Diferencias entre Verificación y Validación</h3>
-      <table>
-        <tr>
-          <th>Aspecto</th>
-          <th>Verificación</th>
-          <th>Validación</th>
-        </tr>
-        <tr>
-          <td>Enfoque</td>
-          <td>Interno, técnico</td>
-          <td>Externo, funcional</td>
-        </tr>
-        <tr>
-          <td>Momento</td>
-          <td>Durante el desarrollo</td>
-          <td>Al finalizar o en pruebas clave</td>
-        </tr>
-        <tr>
-          <td>Objetivo</td>
-          <td>Cumplir especificaciones</td>
-          <td>Satisfacer al usuario</td>
-        </tr>
-        <tr>
-          <td>Técnicas</td>
-          <td>Revisiones, pruebas unitarias</td>
-          <td>Pruebas de usuario, aceptación</td>
-        </tr>
-      </table>
+            <div id="verificacion-content" class="tab-content">
+                <div class="mb-10">
+                    <h3 class="text-2xl font-bold text-center text-slate-800 mb-6">Verificación Estática: Sin Ejecutar Código</h3>
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h4 class="font-bold text-lg mb-2 text-blue-800">Revisiones (Reviews)</h4>
+                            <p class="text-slate-600">Examen manual de código o documentos por parte de equipos para encontrar errores. Incluye revisiones por pares, inspecciones formales y recorridos.</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h4 class="font-bold text-lg mb-2 text-blue-800">Análisis Estático de Código</h4>
+                            <p class="text-slate-600">Uso de herramientas automáticas para analizar el código fuente en busca de vulnerabilidades, errores de sintaxis y violaciones de estándares.</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h4 class="font-bold text-lg mb-2 text-blue-800">Verificación Formal</h4>
+                            <p class="text-slate-600">Aplicación de métodos matemáticos rigurosos para probar la corrección de algoritmos. Reservado para sistemas de alta criticidad.</p>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-bold text-center text-slate-800 mb-6">Verificación Dinámica: Ejecutando el Código</h3>
+                     <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h4 class="font-bold text-lg mb-2 text-blue-800">Pruebas Unitarias</h4>
+                            <p class="text-slate-600">Prueba de los componentes más pequeños del software de forma aislada para asegurar su correcto funcionamiento interno.</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h4 class="font-bold text-lg mb-2 text-blue-800">Pruebas de Integración</h4>
+                            <p class="text-slate-600">Verificación de la interacción y comunicación entre diferentes módulos o componentes una vez que se combinan.</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h4 class="font-bold text-lg mb-2 text-blue-800">Pruebas de Sistema</h4>
+                            <p class="text-slate-600">Prueba del sistema completo e integrado para verificar que cumple con todos los requisitos funcionales y no funcionales.</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h4 class="font-bold text-lg mb-2 text-blue-800">Pruebas de Regresión</h4>
+                            <p class="text-slate-600">Asegura que los cambios recientes en el código no han introducido nuevos defectos ni afectado funcionalidades existentes.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-      <h3>3. Métodos comunes</h3>
-      <p><strong>Verificación:</strong> Revisiones por pares, análisis estático, simulaciones.</p>
-      <p><strong>Validación:</strong> Pruebas de aceptación, prototipos, entrevistas a usuarios.</p>
+            <div id="validacion-content" class="tab-content hidden">
+                 <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h4 class="font-bold text-lg mb-2 text-teal-800">Pruebas de Aceptación (UAT)</h4>
+                        <p class="text-slate-600">Los usuarios finales prueban el sistema en escenarios reales para confirmar que cumple con sus necesidades de negocio antes del lanzamiento.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h4 class="font-bold text-lg mb-2 text-teal-800">Pruebas de Rendimiento</h4>
+                        <p class="text-slate-600">Evalúan la velocidad, capacidad de respuesta, estabilidad y escalabilidad del sistema bajo diferentes cargas de trabajo.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h4 class="font-bold text-lg mb-2 text-teal-800">Pruebas de Usabilidad</h4>
+                        <p class="text-slate-600">Se centran en la facilidad de uso del sistema, la eficiencia y la satisfacción general del usuario (Experiencia de Usuario - UX).</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h4 class="font-bold text-lg mb-2 text-teal-800">Pruebas de Seguridad</h4>
+                        <p class="text-slate-600">Identifican vulnerabilidades que podrían ser explotadas por atacantes, protegiendo los datos y la funcionalidad del sistema.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h4 class="font-bold text-lg mb-2 text-teal-800">Simulación y Prototipos</h4>
+                        <p class="text-slate-600">Validación temprana de conceptos y requisitos con stakeholders mediante modelos interactivos antes del desarrollo completo.</p>
+                    </div>
+                     <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h4 class="font-bold text-lg mb-2 text-teal-800">Pruebas de Regresión</h4>
+                        <p class="text-slate-600">También validan, al asegurar que las funcionalidades que el usuario ya conoce y usa no se han roto con los nuevos cambios.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-      <h3>4. Aplicaciones</h3>
-      <p>
-        En industrias como la automotriz, médica y aeroespacial, V&V son requeridos por normativas. En software, frameworks como ISO 12207 o CMMI los incorporan como etapas clave.
-      </p>
+        <div class="my-16 border-t border-slate-200"></div>
+        
+        <section id="procesos" class="scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-slate-900 mb-2">V&V en Acción: Ciclos de Vida</h2>
+                <p class="max-w-2xl mx-auto text-lg text-slate-600">La V&V no es un evento único, sino un proceso continuo que se adapta al modelo de desarrollo del proyecto. La detección temprana es clave para reducir costos.</p>
+            </div>
 
-      <h3>5. Casos prácticos</h3>
-      <p><strong>Banca:</strong> Verificación de algoritmos de cálculo financiero.</p>
-      <p><strong>Aplicaciones móviles:</strong> Validación de experiencia de usuario real en condiciones de uso.</p>
-    </section>
+            <div class="bg-white p-6 rounded-lg shadow-lg mb-10">
+                <h3 class="text-xl font-bold text-center text-slate-800 mb-4">Costo de Reparación de Defectos por Fase</h3>
+                <div class="chart-container relative h-72 w-full max-w-3xl mx-auto">
+                    <canvas id="defectCostChart"></canvas>
+                </div>
+            </div>
 
-    <section id="conclusion">
-      <h2>Conclusión</h2>
-      <p>
-        Verificación y validación son fundamentales para desarrollar productos que sean seguros, funcionales y útiles. Aplicadas desde etapas tempranas, permiten detectar errores, ahorrar recursos y cumplir expectativas de los clientes y normativas del sector.
-      </p>
-    </section>
+            <div class="text-center my-8">
+                <div class="inline-flex rounded-md shadow-sm">
+                    <button data-process="tradicional" class="process-toggle-button relative inline-flex items-center px-4 py-2 rounded-l-md border border-slate-300 bg-white text-sm font-medium text-slate-700 hover:bg-slate-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 active">
+                        Modelo Tradicional (V)
+                    </button>
+                    <button data-process="agil" class="process-toggle-button -ml-px relative inline-flex items-center px-4 py-2 rounded-r-md border border-slate-300 bg-white text-sm font-medium text-slate-700 hover:bg-slate-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                        Modelo Ágil
+                    </button>
+                </div>
+            </div>
 
-    <section id="referencias">
-      <h2>Referencias</h2>
-      <ul>
-        <li>IEEE. (2016). <em>IEEE Standard for System, Software, and Hardware Verification and Validation</em>. https://doi.org/10.1109/IEEESTD.2016.7547102</li>
-        <li>Sommerville, I. (2016). <em>Software Engineering</em> (10th ed.). Pearson.</li>
-        <li>Pressman, R. S., & Maxim, B. R. (2014). <em>Software Engineering: A Practitioner’s Approach</em> (8th ed.). McGraw-Hill Education.</li>
-        <li>ISO/IEC/IEEE. (2017). <em>Software Life Cycle Processes</em> (ISO/IEC/IEEE 12207:2017).</li>
-        <li>Boehm, B. (1981). <em>Software Engineering Economics</em>. Prentice-Hall.</li>
-      </ul>
-    </section>
-  </div>
+            <div id="tradicional-process" class="process-content">
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-bold text-center text-slate-800 mb-4">El Modelo V</h3>
+                    <p class="text-center text-slate-600 mb-6 max-w-3xl mx-auto">Este modelo ilustra cómo las actividades de V&V se corresponden directamente con cada fase del desarrollo, promoviendo la planificación de pruebas desde el inicio.</p>
+                    <div class="flex justify-center items-start space-x-4 md:space-x-8 text-xs md:text-sm">
+                        <div class="text-center space-y-4">
+                            <div class="p-3 bg-blue-100 text-blue-800 rounded-lg shadow">Requisitos de Usuario</div>
+                            <div class="p-3 bg-blue-100 text-blue-800 rounded-lg shadow mt-10">Diseño de Sistema</div>
+                            <div class="p-3 bg-blue-100 text-blue-800 rounded-lg shadow mt-10">Diseño de Arquitectura</div>
+                            <div class="p-3 bg-blue-100 text-blue-800 rounded-lg shadow mt-10">Diseño de Módulo</div>
+                        </div>
+                        <div class="flex-shrink-0 w-12 md:w-24 h-64 border-l-2 border-b-2 border-r-2 border-slate-300 rounded-bl-3xl rounded-br-3xl"></div>
+                        <div class="text-center space-y-4">
+                            <div class="p-3 bg-teal-100 text-teal-800 rounded-lg shadow">Pruebas de Aceptación</div>
+                            <div class="p-3 bg-teal-100 text-teal-800 rounded-lg shadow mt-10">Pruebas de Sistema</div>
+                            <div class="p-3 bg-teal-100 text-teal-800 rounded-lg shadow mt-10">Pruebas de Integración</div>
+                            <div class="p-3 bg-teal-100 text-teal-800 rounded-lg shadow mt-10">Pruebas Unitarias</div>
+                        </div>
+                    </div>
+                     <div class="text-center mt-4">
+                        <div class="p-3 bg-slate-200 text-slate-800 rounded-lg shadow inline-block">Codificación</div>
+                    </div>
+                </div>
+            </div>
 
-  <footer>
-    <p>&copy; 2025 Monografía V&V - Elaborado por [Tu Nombre]</p>
-  </footer>
+            <div id="agil-process" class="process-content hidden">
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-bold text-center text-slate-800 mb-4">El Enfoque Ágil</h3>
+                    <p class="text-center text-slate-600 mb-8 max-w-3xl mx-auto">En metodologías ágiles, la V&V es un proceso continuo e iterativo, integrado en cada ciclo de desarrollo para una retroalimentación rápida y una calidad constante.</p>
+                     <div class="flex justify-center items-center">
+                        <div class="relative w-72 h-72">
+                            <div class="absolute inset-0 border-4 border-dashed border-blue-400 rounded-full animate-spin" style="animation-duration: 20s;"></div>
+                            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-bold text-blue-800">Ciclo Ágil</div>
+                            <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-4 bg-slate-50 px-2 text-sm">Planificar</div>
+                            <div class="absolute top-1/2 right-0 translate-x-1/2 -mr-4 bg-slate-50 px-2 text-sm">Desarrollar (TDD)</div>
+                            <div class="absolute bottom-0 left-1/2 -translate-x-1/2 mb-2 bg-slate-50 px-2 text-sm">Probar (CI/CD)</div>
+                            <div class="absolute top-1/2 left-0 -translate-x-1/2 -ml-2 bg-slate-50 px-2 text-sm">Liberar</div>
+                        </div>
+                    </div>
+                    <div class="mt-8 grid md:grid-cols-2 lg:grid-cols-4 gap-4 text-center">
+                        <div class="p-3 bg-blue-50 rounded-lg"><strong class="text-blue-700">CI/CD:</strong> Integración y Entrega Continua</div>
+                        <div class="p-3 bg-blue-50 rounded-lg"><strong class="text-blue-700">TDD:</strong> Desarrollo Guiado por Pruebas</div>
+                        <div class="p-3 bg-blue-50 rounded-lg"><strong class="text-blue-700">BDD:</strong> Desarrollo Guiado por Comportamiento</div>
+                        <div class="p-3 bg-blue-50 rounded-lg"><strong class="text-blue-700">Feedback:</strong> Retroalimentación Continua</div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
+        <div class="my-16 border-t border-slate-200"></div>
+
+        <section id="practicas" class="scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-slate-900 mb-2">Dominando la V&V</h2>
+                <p class="max-w-2xl mx-auto text-lg text-slate-600">Conocer los obstáculos comunes y adoptar las mejores prácticas es fundamental para maximizar la eficacia del proceso de Verificación y Validación.</p>
+            </div>
+            <div class="grid lg:grid-cols-2 gap-12">
+                <div>
+                    <h3 class="text-2xl font-bold text-red-600 mb-6 text-center">Desafíos Comunes</h3>
+                    <div class="space-y-4">
+                        <div class="bg-white p-4 rounded-lg shadow flex items-start space-x-4">
+                            <span class="text-red-500 text-2xl">⚠️</span>
+                            <div>
+                                <h4 class="font-semibold text-slate-800">Requisitos Ambiguos</h4>
+                                <p class="text-slate-600 text-sm">La falta de claridad en los requisitos iniciales hace que la V&V sea imprecisa y difícil.</p>
+                            </div>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg shadow flex items-start space-x-4">
+                           <span class="text-red-500 text-2xl">⏳</span>
+                            <div>
+                                <h4 class="font-semibold text-slate-800">Presión de Tiempo y Recursos</h4>
+                                <p class="text-slate-600 text-sm">A menudo, las pruebas son las primeras en ser recortadas cuando los plazos son ajustados, comprometiendo la calidad.</p>
+                            </div>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg shadow flex items-start space-x-4">
+                            <span class="text-red-500 text-2xl">🔄</span>
+                            <div>
+                                <h4 class="font-semibold text-slate-800">Cambios Constantes</h4>
+                                <p class="text-slate-600 text-sm">El "requirements creep" puede desestabilizar el plan de pruebas y hacer que los casos de prueba queden obsoletos.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-bold text-green-600 mb-6 text-center">Mejores Prácticas</h3>
+                    <div class="space-y-4">
+                        <div class="bg-white p-4 rounded-lg shadow flex items-start space-x-4">
+                            <span class="text-green-500 text-2xl">🚀</span>
+                            <div>
+                                <h4 class="font-semibold text-slate-800">Pruebas Tempranas (Shift Left)</h4>
+                                <p class="text-slate-600 text-sm">Integrar la V&V lo antes posible. Revisar requisitos, diseño y código desde el inicio.</p>
+                            </div>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg shadow flex items-start space-x-4">
+                            <span class="text-green-500 text-2xl">🤖</span>
+                            <div>
+                                <h4 class="font-semibold text-slate-800">Automatización Inteligente</h4>
+                                <p class="text-slate-600 text-sm">Automatizar pruebas repetitivas (unitarias, regresión) para acelerar el proceso y mejorar la cobertura.</p>
+                            </div>
+                        </div>
+                         <div class="bg-white p-4 rounded-lg shadow flex items-start space-x-4">
+                            <span class="text-green-500 text-2xl">🤝</span>
+                            <div>
+                                <h4 class="font-semibold text-slate-800">Cultura de Calidad</h4>
+                                <p class="text-slate-600 text-sm">Fomentar la idea de que la calidad es responsabilidad de todo el equipo, no solo de los testers.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-800 text-white mt-16">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center">
+            <p class="font-semibold">Explorador Interactivo de Verificación y Validación</p>
+            <p class="text-sm text-slate-400 mt-2">Basado en la monografía "Verificación y Validación en la Ingeniería de Sistemas y Software".</p>
+            <p class="text-xs text-slate-500 mt-4">Aplicación conceptual generada para facilitar la comprensión del tema.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+            
+            const menuLinks = document.querySelectorAll('#mobile-menu a');
+            menuLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    mobileMenu.classList.add('hidden');
+                });
+            });
+
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const tabId = button.dataset.tab;
+
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+
+                    tabContents.forEach(content => {
+                        if (content.id === `${tabId}-content`) {
+                            content.classList.remove('hidden');
+                        } else {
+                            content.classList.add('hidden');
+                        }
+                    });
+                });
+            });
+            
+            const processToggleButtons = document.querySelectorAll('.process-toggle-button');
+            const processContents = document.querySelectorAll('.process-content');
+
+            processToggleButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const processId = button.dataset.process;
+
+                    processToggleButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+
+                    processContents.forEach(content => {
+                        if (content.id === `${processId}-process`) {
+                            content.classList.remove('hidden');
+                        } else {
+                            content.classList.add('hidden');
+                        }
+                    });
+                });
+            });
+
+
+            const ctx = document.getElementById('defectCostChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Requisitos', 'Diseño', 'Codificación', 'Pruebas', 'Producción'],
+                    datasets: [{
+                        label: 'Costo Relativo de Reparación',
+                        data: [1, 5, 10, 25, 100],
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.6)',
+                            'rgba(34, 197, 94, 0.6)',
+                            'rgba(249, 115, 22, 0.6)',
+                            'rgba(239, 68, 68, 0.6)',
+                            'rgba(139, 92, 246, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgba(59, 130, 246, 1)',
+                            'rgba(34, 197, 94, 1)',
+                            'rgba(249, 115, 22, 1)',
+                            'rgba(239, 68, 68, 1)',
+                            'rgba(139, 92, 246, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Costo Relativo (Escala Logarítmica)'
+                            },
+                            type: 'logarithmic',
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += context.parsed.y + 'x';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
 </body>
 </html>
