@@ -1,4 +1,5 @@
 # disenioPrueba
+```mermaid
 graph LR
     %% Definición de los colores clásicos de Event Storming
     classDef orange fill:#f90,stroke:#333,stroke-width:2px,color:#fff;
