@@ -1,14 +1,26 @@
 # disenioPrueba
 ```mermaid
-graph LR
-    %% Definición de los colores clásicos de Event Storming
-    classDef orange fill:#f90,stroke:#333,stroke-width:2px,color:#fff;
-    classDef blue fill:#0075ff,stroke:#333,stroke-width:2px,color:#fff;
-    classDef yellow fill:#f1c40f,stroke:#333,stroke-width:2px;
-    classDef purple fill:#9b59b6,stroke:#333,stroke-width:2px,color:#fff;
+flowchart LR
+    %% Configuración de Estilo para parecer Notas Adhesivas
+    classDef command fill:#00bfff,stroke:#333,stroke-width:1px,color:#000,font-weight:bold
+    classDef event fill:#ff9f43,stroke:#333,stroke-width:1px,color:#000,font-weight:bold
+    classDef aggregate fill:#fff4a3,stroke:#333,stroke-width:1px,color:#000
+    classDef actor fill:#feca57,stroke:#333,stroke-width:1px,color:#000,font-size:10px
 
-    %% Elementos del flujo
-    C1[Comando: Solicitar Servicio]:::blue --> A1[Agregado: Gestion de SAA]:::yellow
-    A1 --> E1((Evento: Solicitud Creada)):::orange
-    E1 --> P1{Política: Notificar Técnico}:::purple
-    P1 --> C2[Comando: Asignar Turno]:::blue
+    subgraph Bloque1 [ ]
+        direction TB
+        A1[👤 Cliente]:::actor
+        C1[Registrar Solicitud]:::command
+        E1[Solicitud Registrada]:::event
+    end
+
+    subgraph Bloque2 [ ]
+        direction TB
+        Agg1[📦 SAA Agregado]:::aggregate
+    end
+
+    Bloque1 --> Bloque2
+
+    %% Estilos de los subgrafos para que sean invisibles
+    style Bloque1 fill:none,stroke:none
+    style Bloque2 fill:none,stroke:none
